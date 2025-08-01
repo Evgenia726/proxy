@@ -1,29 +1,33 @@
 const express = require("express");
+const fetch = require("node-fetch");
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-app.get("/:article", async (req, res) => {
-  const article = req.params.article;
+app.get("/api", async (req, res) => {
+  const url = req.query.url;
+  if (!url) return res.status(400).json({ error: "Missing URL" });
+
   try {
-    const response = await fetch(`https://card.wb.ru/cards/detail?appType=1&curr=rub&nm=${article}`);
-    const json = await response.json();
-    const product = json.data.products?.[0];
-
-    if (!product) {
-      return res.status(404).json({ error: "Product not found" });
-    }
-
-    res.json({
-      article,
-      title: product.name,
-      price: product.salePriceU / 100,
-      rating: product.reviewRating,
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+      },
     });
+
+    const text = await response.text();
+    res.send(text);
   } catch (err) {
-    res.status(500).json({ error: "Something went wrong", details: err.message });
+    res.status(500).json({
+      error: "Something went wrong",
+      details: err.message,
+    });
   }
 });
 
+app.get("/", (req, res) => {
+  res.send("Proxy is working!");
+});
+
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
