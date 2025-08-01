@@ -2,9 +2,13 @@ const express = require("express");
 const fetch = require("node-fetch");
 const app = express();
 
+// Прокси-роут /api?url=https://...
 app.get("/api", async (req, res) => {
   const url = req.query.url;
-  if (!url) return res.status(400).json({ error: "Missing URL" });
+
+  if (!url) {
+    return res.status(400).json({ error: "Missing URL" });
+  }
 
   try {
     const response = await fetch(url, {
@@ -17,8 +21,9 @@ app.get("/api", async (req, res) => {
       },
     });
 
-    const html = await response.text();
-    res.send(html);
+    const html = await response.text(); // не .json()!
+    res.send(html); // отправляем HTML клиенту
+
   } catch (err) {
     res.status(500).json({
       error: "Something went wrong",
@@ -27,12 +32,15 @@ app.get("/api", async (req, res) => {
   }
 });
 
+// Корневой маршрут для проверки работоспособности
 app.get("/", (req, res) => {
-  res.send("Proxy is working!");
+  res.send("✅ Proxy is working!");
 });
 
+// Запуск сервера
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
 
