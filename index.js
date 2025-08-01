@@ -1,6 +1,6 @@
-import express from 'express';
-import fetch from 'node-fetch';
-import cors from 'cors';
+const express = require('express');
+const fetch = require('node-fetch');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 10000;
 app.use(cors());
 
 app.get('/api', async (req, res) => {
-  const url = req.query.url;
+  const { url } = req.query;
 
   if (!url) {
     return res.status(400).json({ error: 'Missing url parameter' });
@@ -17,18 +17,21 @@ app.get('/api', async (req, res) => {
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0'
-      }
+        'User-Agent': 'Mozilla/5.0',
+      },
     });
 
-    const text = await response.text(); // или html — на твой вкус
-    res.send(text);
+    const html = await response.text();
+    res.send(html);
   } catch (error) {
-    res.status(500).json({ error: 'Something went wrong', details: error.message });
+    res.status(500).json({
+      error: 'Something went wrong',
+      details: error.message,
+    });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Proxy is running on port ${PORT}`);
+  console.log(`Proxy server is running on port ${PORT}`);
 });
 
