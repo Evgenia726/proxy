@@ -1,45 +1,34 @@
-const express = require("express");
-const fetch = require("node-fetch");
-const app = express();
+import express from 'express';
+import fetch from 'node-fetch';
+import cors from 'cors';
 
-// Прокси-роут /api?url=https://...
-app.get("/api", async (req, res) => {
+const app = express();
+const PORT = process.env.PORT || 10000;
+
+app.use(cors());
+
+app.get('/api', async (req, res) => {
   const url = req.query.url;
 
   if (!url) {
-    return res.status(400).json({ error: "Missing URL" });
+    return res.status(400).json({ error: 'Missing url parameter' });
   }
 
   try {
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Referer": "https://www.google.com/",
-        "Connection": "keep-alive",
-      },
+        'User-Agent': 'Mozilla/5.0'
+      }
     });
 
-    const html = await response.text(); // не .json()!
-    res.send(html); // отправляем HTML клиенту
-
-  } catch (err) {
-    res.status(500).json({
-      error: "Something went wrong",
-      details: err.message,
-    });
+    const text = await response.text(); // или html — на твой вкус
+    res.send(text);
+  } catch (error) {
+    res.status(500).json({ error: 'Something went wrong', details: error.message });
   }
 });
 
-// Корневой маршрут для проверки работоспособности
-app.get("/", (req, res) => {
-  res.send("✅ Proxy is working!");
-});
-
-// Запуск сервера
-const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Proxy is running on port ${PORT}`);
 });
 
